@@ -11,16 +11,18 @@ const sendMsg = async () => {
 
   await channel.assertQueue(queueName, { durable: true });
 
-  channel.prefetch(1);
+  channel.prefetch(1); // do not send next msg until previous one is processed
+
   console.log(`waiting for msg in queue: ${queueName}`);
 
   channel.consume(queueName, msg => {
-    const secs = msg.content.toString().split('.').length - 1;
+    // CMD to run: node send_task.js test... 
+    const secs = msg.content.toString().split('.').length - 1; // it will wait for 1 second for each dot
     console.log('Received:', msg.content.toString());
 
     setTimeout(() => {
       console.log('Done resizing Image!');
-      channel.ack(msg)
+      channel.ack(msg) // send acknowledgement once task is completed
     }, secs * 1000)
   }, { noAck: false })
 }
